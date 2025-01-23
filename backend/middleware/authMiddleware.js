@@ -1,10 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 export const protectRoute = (req, res, next) => {
-	console.log(req.headers);
-	const token =
-		req.cookies.accessToken ||
-		req.header('Authorization')?.replace('Bearer ', '');
+	const token = req.cookies.accessToken;
 	if (!token) {
 		return res.status(401).json({ message: 'No token provided' });
 	}
