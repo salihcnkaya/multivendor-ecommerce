@@ -55,6 +55,7 @@ export const getProductDetails = async (req, res) => {
 
 	try {
 		const products = await Product.find({ slug });
+		console.log(products);
 		let defaultProduct = products[0];
 
 		if (magaza) {
@@ -75,6 +76,22 @@ export const getProductDetails = async (req, res) => {
 			}
 		}
 
+		if (!magaza) {
+			const defaultVendorProduct = await ProductVendor.find({
+				product: { $in: products.map((p) => p._id) },
+			})
+				.populate('vendor', '_id storeName slug')
+				.sort({ price: 1 }) // En ucuz fiyatlı vendor
+				.limit(1);
+
+			if (defaultVendorProduct.length > 0) {
+				// Default vendor belirle
+				defaultProduct = products.find(
+					(p) => p._id.toString() === defaultVendorProduct[0].product.toString()
+				);
+			}
+		}
+
 		const productVendorQuery = await ProductVendor.find({
 			product: defaultProduct._id,
 		}).populate('vendor', '_id storeName slug');
@@ -91,5 +108,36 @@ export const getProductDetails = async (req, res) => {
 		});
 	} catch (error) {
 		res.status(500).json({ message: error.message });
+	}
+};
+
+export const deleteProduct = async (req, res) => {
+	try {
+		const vendorId = req.user.userId;
+		const { slug } = req.params;
+
+		const products = await Product.find({ slug });
+
+		if (!products) {
+			return res.status(404).json({ message: 'No product found!' });
+		}
+
+		const vendorProductRelation = await ProductVendor.findOne({
+			product: { $in: products.map((p) => p._id) },
+			vendor: vendorId,
+		});
+
+		if (!vendorProductRelation) {
+			return res
+				.status(403)
+				.json({ message: 'This product is not related to you.' });
+		}
+
+		await Product.findByIdAndDelete(vendorProductRelation.product._id);
+		await ProductVendor.findByIdAndDelete(vendorProductRelation._id);
+
+		return res.status(200).json({ message: 'Product deleted successfully' });
+	} catch (error) {
+		return res.status(500).json({ message: error.message });
 	}
 };
