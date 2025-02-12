@@ -16,6 +16,7 @@ const productVendorSchema = new mongoose.Schema({
 		type: Number,
 		required: true,
 	},
+	productSlug: { type: String, required: true },
 });
 
 export const ProductVendor = mongoose.model(

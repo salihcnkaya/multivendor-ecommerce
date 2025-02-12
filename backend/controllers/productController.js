@@ -3,6 +3,8 @@ import { ProductVendor } from '../models/ProductVendor.js';
 import { Vendor } from '../models/Vendor.js';
 import { generateSlug } from '../utils/generateSlug.js';
 
+import mongoose from 'mongoose';
+
 export const createProduct = async (req, res) => {
 	const { name, description, price, stock, category } = req.body;
 	const vendorId = req.user.userId;
@@ -24,11 +26,8 @@ export const createProduct = async (req, res) => {
 			stock,
 		});
 
+		productVendor.productSlug = generateSlug(name);
 		await productVendor.save();
-
-		await Vendor.findByIdAndUpdate(vendorId, {
-			$push: { products: product._id },
-		});
 
 		res.status(201).json({ message: 'Product created successfully' });
 	} catch (error) {
@@ -54,57 +53,44 @@ export const getProductDetails = async (req, res) => {
 	const { magaza } = req.query;
 
 	try {
-		const products = await Product.find({ slug });
-		console.log(products);
-		let defaultProduct = products[0];
+		const productVendors = await ProductVendor.find({ productSlug: slug })
+			.populate('vendor', '_id storeName slug')
+			.sort({ price: 1 });
+
+		if (productVendors.length === 0) {
+			return res.status(404).json({ message: 'Product not found!' });
+		}
+
+		let defaultProduct = await Product.findOne({
+			_id: productVendors[0].product,
+		});
 
 		if (magaza) {
 			const vendor = await Vendor.findOne({ slug: generateSlug(magaza) });
 
-			if (!vendor)
+			if (!vendor) {
 				return res.status(404).json({ message: 'Vendor not found!' });
+			}
 
-			const vendorProductRelation = await ProductVendor.findOne({
-				product: { $in: products.map((p) => p._id) },
-				vendor: vendor._id,
-			});
+			const vendorProduct = productVendors.find(
+				(pv) => pv.vendor._id.toString() === vendor._id.toString()
+			);
 
-			if (vendorProductRelation) {
-				defaultProduct = products.find(
-					(p) => p._id.toString() === vendorProductRelation.product.toString()
-				);
+			if (vendorProduct) {
+				defaultProduct = await Product.findOne({ _id: vendorProduct.product });
 			}
 		}
 
-		if (!magaza) {
-			const defaultVendorProduct = await ProductVendor.find({
-				product: { $in: products.map((p) => p._id) },
-			})
-				.populate('vendor', '_id storeName slug')
-				.sort({ price: 1 }) // En ucuz fiyatlı vendor
-				.limit(1);
-
-			if (defaultVendorProduct.length > 0) {
-				// Default vendor belirle
-				defaultProduct = products.find(
-					(p) => p._id.toString() === defaultVendorProduct[0].product.toString()
-				);
-			}
-		}
-
-		const productVendorQuery = await ProductVendor.find({
-			product: defaultProduct._id,
-		}).populate('vendor', '_id storeName slug');
-
-		const otherVendorsQuery = await ProductVendor.find({
-			product: { $in: products.map((p) => p._id) },
-			product: { $ne: defaultProduct._id },
-		}).populate('vendor', '_id storeName slug');
+		const otherVendors = productVendors.filter(
+			(pv) => pv.product._id.toString() !== defaultProduct._id.toString()
+		);
 
 		res.status(200).json({
 			defaultProduct,
-			productVendor: productVendorQuery,
-			otherVendors: otherVendorsQuery,
+			productVendor: productVendors.filter(
+				(pv) => pv.product._id.toString() === defaultProduct._id.toString()
+			),
+			otherVendors,
 		});
 	} catch (error) {
 		res.status(500).json({ message: error.message });
@@ -116,14 +102,8 @@ export const deleteProduct = async (req, res) => {
 		const vendorId = req.user.userId;
 		const { slug } = req.params;
 
-		const products = await Product.find({ slug });
-
-		if (!products) {
-			return res.status(404).json({ message: 'No product found!' });
-		}
-
 		const vendorProductRelation = await ProductVendor.findOne({
-			product: { $in: products.map((p) => p._id) },
+			productSlug: slug,
 			vendor: vendorId,
 		});
 
