@@ -3,8 +3,6 @@ import { ProductVendor } from '../models/ProductVendor.js';
 import { Vendor } from '../models/Vendor.js';
 import { generateSlug } from '../utils/generateSlug.js';
 
-import mongoose from 'mongoose';
-
 export const createProduct = async (req, res) => {
 	const { name, description, price, stock, category } = req.body;
 	const vendorId = req.user.userId;
@@ -117,6 +115,55 @@ export const deleteProduct = async (req, res) => {
 		await ProductVendor.findByIdAndDelete(vendorProductRelation._id);
 
 		return res.status(200).json({ message: 'Product deleted successfully' });
+	} catch (error) {
+		return res.status(500).json({ message: error.message });
+	}
+};
+
+export const searchProduct = async (req, res) => {
+	const { search } = req.query;
+
+	try {
+		const searchTerm = generateSlug(search);
+
+		const productVendors = await ProductVendor.find({
+			productSlug: { $regex: searchTerm },
+		})
+			.populate('vendor', '_id storeName slug')
+			.sort({ price: 1 });
+
+		if (productVendors.length === 0) {
+			return res.status(404).json({ message: 'Product not found!' });
+		}
+
+		const groupedProducts = {};
+		productVendors.forEach((pv) => {
+			const productSlug = pv.productSlug;
+			if (!groupedProducts[productSlug]) {
+				groupedProducts[productSlug] = [];
+			}
+			groupedProducts[productSlug].push(pv);
+		});
+
+		const result = [];
+		for (const productSlug in groupedProducts) {
+			const vendors = groupedProducts[productSlug];
+
+			const cheapestVendor = vendors.reduce((prev, current) => {
+				return prev.price < current.price ? prev : current;
+			});
+
+			let defaultProduct = await Product.findOne({
+				_id: cheapestVendor.product,
+			});
+
+			result.push({
+				defaultProduct,
+				productVendor: cheapestVendor,
+			});
+		}
+
+		res.status(200).json(result);
 	} catch (error) {
 		return res.status(500).json({ message: error.message });
 	}
