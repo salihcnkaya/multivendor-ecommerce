@@ -16,7 +16,9 @@ const productVendorSchema = new mongoose.Schema({
 		type: Number,
 		required: true,
 	},
-	productSlug: { type: String, required: true },
+	vendorDescription: { type: String },
+	vendorImages: [{ type: String }],
+	isActive: { type: Boolean, default: false },
 });
 
 export const ProductVendor = mongoose.model(
