@@ -24,6 +24,8 @@ const userSchema = new mongoose.Schema(
 			enum: ['user'],
 			default: 'user',
 		},
+		addresses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Address' }],
+		cart: { type: mongoose.Schema.Types.ObjectId, ref: 'Cart' },
 	},
 	{ timestamps: true }
 );

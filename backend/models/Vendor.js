@@ -31,6 +31,7 @@ const vendorSchema = new mongoose.Schema(
 			type: String,
 			unique: true,
 		},
+		addresses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Address' }],
 	},
 	{ timestamps: true }
 );
