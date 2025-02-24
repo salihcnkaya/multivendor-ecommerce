@@ -16,14 +16,11 @@ export const getCart = async (req, res) => {
 	}
 };
 
-//
-
 export const addToCart = async (req, res) => {
 	const { defaultVendor, quantity } = req.body;
 	const userId = req.user.userId;
 
 	try {
-		// Ürün fiyatını kontrol et
 		if (!defaultVendor || typeof defaultVendor.price !== 'number') {
 			return res.status(400).json({ message: 'Geçersiz ürün fiyatı.' });
 		}
@@ -55,9 +52,8 @@ export const addToCart = async (req, res) => {
 			});
 		}
 
-		// Sepet toplam fiyatını güncelle
 		cart.totalPrice = cart.items.reduce((total, item) => {
-			return total + item.productVendor.price * item.quantity;
+			return total + item.price * item.quantity;
 		}, 0);
 
 		await cart.save();
@@ -92,7 +88,7 @@ export const removeFromCart = async (req, res) => {
 		cart.items.splice(productIndex, 1);
 
 		cart.totalPrice = cart.items.reduce((total, item) => {
-			return total + item.productVendor.price * item.quantity;
+			return total + item.price * item.quantity;
 		}, 0);
 
 		await cart.save();
@@ -120,21 +116,28 @@ export const updateItemInCart = async (req, res) => {
 		}
 
 		const item = cart.items.find(
-			productVendor._id.toString() === defaultVendor._id.toString()
+			(item) => item.productVendor._id.toString() === defaultVendor._id
 		);
+
+		if (!item) {
+			return res.status(404).json({ message: 'Product is not in your cart!' });
+		}
 
 		item.quantity = quantity;
 
 		cart.totalPrice = cart.items.reduce((total, item) => {
-			return total + item.productVendor.price * item.quantity;
+			return total + item.price * item.quantity;
 		}, 0);
+
+		await cart.save();
+
+		res.json({ message: 'Ürün guncellendi', cart });
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
 };
 
 export const clearCart = async (req, res) => {
-	const { defaultVendor, quantity } = req.body;
 	const userId = req.user.userId;
 
 	try {
