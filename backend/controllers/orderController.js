@@ -36,3 +36,29 @@ export const createOrder = async (req, res) => {
 		res.status(500).json({ message: error.message });
 	}
 };
+
+export const getUserOrders = async (req, res) => {
+	const user = req.user.userId;
+
+	try {
+		const orders = await Order.find({ user }).populate('items.productVendor');
+
+		if (!orders) {
+			return res.status(404).json({ message: 'Orders not found' });
+		}
+
+		const isValidOrder = orders.every(
+			(order) => order.user.toString() === user.toString()
+		);
+
+		if (!isValidOrder) {
+			return res
+				.status(403)
+				.json({ message: 'This order is not related to you.' });
+		}
+
+		res.status(200).json(orders);
+	} catch (error) {
+		res.status(500).json({ message: error.message });
+	}
+};
