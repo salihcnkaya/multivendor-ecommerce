@@ -1,9 +1,9 @@
 import { Order } from '../models/Order.js';
 import { Cart } from '../models/Cart.js';
-import { Address } from '../models/Address.js';
 
 export const createOrder = async (req, res) => {
 	const userId = req.user.userId;
+	const { addressId } = req.body;
 
 	try {
 		const cart = await Cart.findOne({ user: userId }).populate(
@@ -16,6 +16,7 @@ export const createOrder = async (req, res) => {
 
 		const orderItems = cart.items.map((item) => ({
 			productVendor: item.productVendor,
+			vendor: item.productVendor.vendor,
 			quantity: item.quantity,
 			price: item.price,
 		}));
@@ -24,7 +25,7 @@ export const createOrder = async (req, res) => {
 			user: userId,
 			items: orderItems,
 			totalPrice: cart.totalPrice,
-			// address: addresId,
+			address: addressId,
 		});
 
 		await newOrder.save();
