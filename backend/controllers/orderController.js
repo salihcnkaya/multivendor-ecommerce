@@ -63,3 +63,26 @@ export const getUserOrders = async (req, res) => {
 		res.status(500).json({ message: error.message });
 	}
 };
+
+export const getOrderDetails = async (req, res) => {
+	const { orderId } = req.params;
+	const { userId, role } = req.user;
+
+	try {
+		const order = await Order.findById(orderId);
+
+		if (!order) {
+			return res.status(404).json({ message: 'Order not found!' });
+		}
+
+		if (userId !== order.user.toString() && role !== 'admin') {
+			return res
+				.status(403)
+				.json({ message: 'This order is not related to you!' });
+		}
+
+		res.json(order);
+	} catch (error) {
+		res.status(500).json({ message: error.message });
+	}
+};
