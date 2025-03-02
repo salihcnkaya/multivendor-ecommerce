@@ -5,7 +5,7 @@ export const getUserProfile = async (req, res) => {
 
 	try {
 		const profileData = await User.findById(user)
-			.select('name surname email adresses')
+			.select('name surname email addresses')
 			.populate('addresses');
 
 		if (!profileData) {
