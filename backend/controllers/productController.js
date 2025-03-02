@@ -218,3 +218,39 @@ export const searchProduct = async (req, res) => {
 		return res.status(500).json({ message: error.message });
 	}
 };
+
+export const updateProduct = async (req, res) => {
+	const { price, stock, vendorDescription } = req.body;
+	const vendorId = req.user.userId;
+	const { slug } = req.params;
+
+	try {
+		const product = await Product.findOne({ slug });
+
+		if (!product) {
+			return res.status(404).json({ message: 'Product not found!' });
+		}
+
+		const productVendor = await ProductVendor.findOne({
+			product: product._id,
+			vendor: vendorId,
+		});
+
+		if (!productVendor) {
+			return res
+				.status(403)
+				.json({ message: 'This product is not related to you!' });
+		}
+
+		productVendor.price = price || productVendor.price;
+		productVendor.stock = stock || productVendor.stock;
+		productVendor.vendorDescription =
+			vendorDescription || productVendor.vendorDescription;
+
+		await productVendor.save();
+
+		res.status(200).json({ message: 'Product updated' });
+	} catch (error) {
+		return res.status(500).json({ message: error.message });
+	}
+};
