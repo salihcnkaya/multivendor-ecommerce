@@ -1,5 +1,6 @@
 import { Order } from '../models/Order.js';
 import { Cart } from '../models/Cart.js';
+import { Address } from '../models/Address.js';
 
 export const createOrder = async (req, res) => {
 	const userId = req.user.userId;
@@ -14,6 +15,11 @@ export const createOrder = async (req, res) => {
 			return res.status(404).json({ message: 'Sepet bulunamadi' });
 		}
 
+		const address = await Address.findById(addressId);
+		if (!address) {
+			return res.status(404).json({ message: 'Adres bulunamadi' });
+		}
+
 		const orderItems = cart.items.map((item) => ({
 			productVendor: item.productVendor,
 			vendor: item.productVendor.vendor,
@@ -25,7 +31,16 @@ export const createOrder = async (req, res) => {
 			user: userId,
 			items: orderItems,
 			totalPrice: cart.totalPrice,
-			address: addressId,
+			address: {
+				title: address.title,
+				country: address.country,
+				city: address.city,
+				district: address.district,
+				address: address.address,
+				buildingNo: address.buildingNo,
+				apartmentNo: address.apartmentNo,
+				phoneNumber: address.phoneNumber,
+			},
 		});
 
 		await newOrder.save();
@@ -42,7 +57,13 @@ export const getUserOrders = async (req, res) => {
 	const user = req.user.userId;
 
 	try {
-		const orders = await Order.find({ user }).populate('items.productVendor');
+		const orders = await Order.find({ user })
+			.populate({
+				path: 'items.productVendor',
+				populate: [{ path: 'product', model: 'Product' }],
+			})
+			.populate({ path: 'items.vendor', model: 'Vendor' })
+			.populate({ path: 'address', model: 'Address' });
 
 		if (!orders) {
 			return res.status(404).json({ message: 'Orders not found' });
