@@ -8,6 +8,10 @@ const productSchema = new mongoose.Schema(
 		category: { type: String, required: true },
 		slug: { type: String, required: true },
 		isApproved: { type: Boolean, default: false },
+		requestFrom: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Vendor',
+		},
 	},
 	{ timestamps: true }
 );
