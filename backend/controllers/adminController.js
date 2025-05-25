@@ -1,6 +1,20 @@
 import { Product } from '../models/Product.js';
 import { ProductVendor } from '../models/ProductVendor.js';
 
+export const getUnpapprovedProducts = async (req, res) => {
+	try {
+		const products = await Product.find({ isApproved: false }).populate(
+			'requestFrom'
+		);
+		if (!products.length) {
+			return res.status(404).json({ message: 'No unapproved products.' });
+		}
+		res.json({ products });
+	} catch (error) {
+		res.status(500).json({ message: error.message });
+	}
+};
+
 export const approveProduct = async (req, res) => {
 	const { slug } = req.params;
 
