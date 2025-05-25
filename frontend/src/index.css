@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.bottom-line::after {
+	content: '';
+	height: 3px;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+	background-color: #f97316;
+	width: 100%;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+}
