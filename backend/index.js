@@ -1,6 +1,7 @@
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import userAuthRoutes from './routes/userAuthRoutes.js';
 import vendorAuthRoutes from './routes/vendorAuthRoutes.js';
 import adminAuthRoutes from './routes/adminAuthRoutes.js';
@@ -13,6 +14,7 @@ import orderRoutes from './routes/orderRoutes.js';
 import addressRoutes from './routes/addressRoutes.js';
 import { connectDB } from './config/db.js';
 import { authorize, protectRoute } from './middleware/authMiddleware.js';
+import { checkAuth } from './controllers/authController.js';
 
 dotenv.config();
 
@@ -21,10 +23,18 @@ const PORT = process.env.PORT;
 
 app.use(express.json());
 app.use(cookieParser());
+app.use(
+	cors({
+		origin: 'http://localhost:5173',
+		methods: 'GET,POST,PUT,DELETE',
+		credentials: true,
+	})
+);
 
 app.use('/api/auth/user', userAuthRoutes);
 app.use('/api/auth/vendor', vendorAuthRoutes);
 app.use('/api/auth/admin', adminAuthRoutes);
+app.get('/api/auth/check-auth', protectRoute, checkAuth);
 
 app.use('/api/user', userRoutes);
 app.use('/api/vendor', vendorRoutes);
