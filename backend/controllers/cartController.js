@@ -1,16 +1,30 @@
 import { Cart } from '../models/Cart.js';
 
+export const populateCart = async (cart) => {
+	return await cart.populate({
+		path: 'items.productVendor',
+		populate: [
+			{ path: 'vendor', model: 'Vendor' },
+			{ path: 'product', model: 'Product' },
+		],
+	});
+};
+
 export const getCart = async (req, res) => {
 	try {
-		const cart = await Cart.findOne({ user: req.user.userId }).populate(
-			'items.productVendor'
-		);
+		const cart = await Cart.findOne({ user: req.user.userId }).populate({
+			path: 'items.productVendor',
+			populate: [
+				{ path: 'vendor', model: 'Vendor' },
+				{ path: 'product', model: 'Product' },
+			],
+		});
 
 		if (!cart) {
 			return res.status(404).json({ message: 'Cart not found' });
 		}
 
-		res.json(cart);
+		res.json({ cart });
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
@@ -57,8 +71,11 @@ export const addToCart = async (req, res) => {
 		}, 0);
 
 		await cart.save();
+		const populatedCart = await populateCart(cart);
 
-		res.status(201).json({ message: 'Ürün sepete eklendi', cart });
+		res
+			.status(201)
+			.json({ message: 'Ürün sepete eklendi', cart: populatedCart });
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
@@ -92,8 +109,9 @@ export const removeFromCart = async (req, res) => {
 		}, 0);
 
 		await cart.save();
+		const populatedCart = await populateCart(cart);
 
-		res.json({ message: 'Ürün sepetten cikarildi', cart });
+		res.json({ message: 'Ürün sepetten cikarildi', cart: populatedCart });
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
@@ -130,8 +148,8 @@ export const updateItemInCart = async (req, res) => {
 		}, 0);
 
 		await cart.save();
-
-		res.json({ message: 'Ürün guncellendi', cart });
+		const populatedCart = await populateCart(cart);
+		res.json({ message: 'Ürün guncellendi', cart: populatedCart });
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
@@ -154,7 +172,9 @@ export const clearCart = async (req, res) => {
 
 		await cart.save();
 
-		res.status(200).json({ message: 'Cart has been successfully cleared.' });
+		res
+			.status(200)
+			.json({ message: 'Cart has been successfully cleared.', cart });
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
