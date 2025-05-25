@@ -35,9 +35,14 @@ const orderSchema = new mongoose.Schema(
 			default: 'unpaid',
 		},
 		address: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'Address',
-			required: true,
+			title: { type: String, required: true },
+			country: { type: String, required: true },
+			city: { type: String, required: true },
+			district: { type: String, required: true },
+			address: { type: String, required: true },
+			buildingNo: { type: String, required: true },
+			apartmentNo: { type: String, required: true },
+			phoneNumber: { type: String },
 		},
 	},
 	{ timestamps: true }
