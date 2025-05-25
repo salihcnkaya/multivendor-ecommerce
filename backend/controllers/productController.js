@@ -27,6 +27,7 @@ export const createProduct = async (req, res) => {
 				description,
 				category,
 				isApproved: false,
+				requestFrom: vendorId,
 			});
 
 			await product.save();
@@ -74,7 +75,9 @@ export const getProducts = async (req, res) => {
 
 		const productDetails = await Promise.all(
 			products.map(async (product) => {
-				const defaultVendor = await ProductVendor.find({ product: product._id })
+				const defaultVendor = await ProductVendor.findOne({
+					product: product._id,
+				})
 					.sort({ price: 1 })
 					.populate('vendor', '_id storeName slug')
 					.limit(1);
