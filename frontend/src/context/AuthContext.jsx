@@ -73,6 +73,25 @@ export const AuthProvider = ({ children }) => {
 		}
 	};
 
+	const register = async (formData, role) => {
+		setIsLoading(true);
+		try {
+			const response = await axios.post(
+				`http://localhost:5000/api/auth/${role}/register`,
+				formData,
+				{
+					withCredentials: true,
+				}
+			);
+			return { success: true, data: response.data };
+		} catch (error) {
+			console.error(error);
+			return { success: false, error };
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	const getAdresses = async () => {
 		setIsLoading(true);
 		try {
@@ -185,6 +204,7 @@ export const AuthProvider = ({ children }) => {
 				editAddress,
 				deleteAddress,
 				login,
+				register,
 				logout,
 				checkAuth,
 				update,
