@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const AuthForm = ({ formType, role }) => {
-	const { login, isLoading } = useAuth();
+	const { login, register, isLoading } = useAuth();
 	const [isLogin, setIsLogin] = useState(formType === 'login');
 	const [formData, setFormData] = useState({
 		name: '',
@@ -27,8 +27,18 @@ const AuthForm = ({ formType, role }) => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+
+		if (role === 'admin' && !isLogin) {
+			alert('Admin kaydı yapılamaz.');
+			return;
+		}
+
 		try {
-			await login(formData, role);
+			if (isLogin) {
+				await login(formData, role);
+			} else {
+				await register(formData, role);
+			}
 		} catch (error) {
 			console.log(error);
 		}
