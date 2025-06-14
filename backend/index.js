@@ -23,6 +23,7 @@ const PORT = process.env.PORT;
 
 app.use(express.json());
 app.use(cookieParser());
+app.use('/uploads', express.static('backend/uploads'));
 app.use(
 	cors({
 		origin: 'http://localhost:5173',
