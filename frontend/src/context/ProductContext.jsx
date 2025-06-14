@@ -51,7 +51,6 @@ export const ProductProvider = ({ children }) => {
 		}
 	};
 
-	// Ürün arama fonksiyonu
 	const searchProducts = async (query) => {
 		setLoading(true);
 		try {
@@ -91,8 +90,9 @@ export const ProductProvider = ({ children }) => {
 	const editProduct = async (product) => {
 		setLoading(true);
 		try {
+			const slug = product.get('slug');
 			const response = await axios.put(
-				`http://localhost:5000/api/products/${product.slug}`,
+				`http://localhost:5000/api/products/${slug}`,
 				product,
 				{ withCredentials: true }
 			);

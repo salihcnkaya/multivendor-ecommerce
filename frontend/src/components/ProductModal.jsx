@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import DragAndDrop from './DragAndDrop';
 
 const Modal = ({ isOpen, onClose, children }) => {
 	if (!isOpen) return null;
 
 	return (
 		<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-			<div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full relative">
+			<div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full relative ">
 				<button
 					className="absolute top-2 right-4 text-gray-500 hover:text-gray-700"
 					onClick={onClose}
@@ -58,6 +59,8 @@ export const ProductModal = ({
 		category: '',
 	});
 
+	const [images, setImages] = useState([]);
+
 	useEffect(() => {
 		if (selectedProduct) {
 			setFormData({
@@ -81,13 +84,26 @@ export const ProductModal = ({
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		onSubmit(formData);
+		// onSubmit(formData);
+		// onClose();
+
+		const data = new FormData();
+		Object.entries(formData).forEach(([key, value]) => {
+			data.append(key, value);
+		});
+
+		images.forEach((file) => {
+			data.append('images', file);
+		});
+
+		onSubmit(data);
 		onClose();
 	};
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose}>
 			<h2 className="text-lg font-bold">Ürün Bilgilerini Giriniz</h2>
+			<DragAndDrop isOpen={isOpen} onFilesChange={setImages} />
 			<form onSubmit={handleSubmit}>
 				<div className="mb-4">
 					<label className="block text-sm">Ürün Adı</label>
