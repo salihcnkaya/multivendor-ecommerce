@@ -2,6 +2,8 @@ import { Product } from '../models/Product.js';
 import { ProductVendor } from '../models/ProductVendor.js';
 import { Vendor } from '../models/Vendor.js';
 import { generateSlug } from '../utils/generateSlug.js';
+import path from 'path';
+import sharp from 'sharp';
 
 export const createProduct = async (req, res) => {
 	const {
@@ -20,11 +22,34 @@ export const createProduct = async (req, res) => {
 
 		let product = await Product.findOne({ slug });
 
+		const imagePaths = [];
+
+		if (req.files && req.files.length > 0) {
+			for (const file of req.files) {
+				const ext = path.extname(file.originalname);
+				const filename = `productimg_${slug}_${Date.now()}_${Math.round(
+					Math.random() * 1e9
+				)}${ext}`;
+				const filepath = path.join('backend/uploads', filename);
+
+				await sharp(file.buffer)
+					.resize(424, 600, {
+						fit: 'contain',
+						background: { r: 255, g: 255, b: 255 },
+					})
+					.toFormat('jpeg', { quality: 80 })
+					.toFile(filepath);
+
+				imagePaths.push(`/uploads/${filename}`);
+			}
+		}
+
 		if (!product) {
 			product = new Product({
 				name,
 				slug,
 				description,
+				images: imagePaths,
 				category,
 				isApproved: false,
 				requestFrom: vendorId,
@@ -50,7 +75,7 @@ export const createProduct = async (req, res) => {
 			price,
 			stock,
 			vendorDescription,
-			vendorImages,
+			vendorImages: product.images.length === 0 ? imagePaths : [],
 			isActive: product.isApproved,
 		});
 
@@ -234,6 +259,28 @@ export const updateProduct = async (req, res) => {
 			return res.status(404).json({ message: 'Product not found!' });
 		}
 
+		const imagePaths = [];
+
+		if (req.files && req.files.length > 0) {
+			for (const file of req.files) {
+				const ext = path.extname(file.originalname);
+				const filename = `productimg_${slug}_${Date.now()}_${Math.round(
+					Math.random() * 1e9
+				)}${ext}`;
+				const filepath = path.join('backend/uploads', filename);
+
+				await sharp(file.buffer)
+					.resize(424, 600, {
+						fit: 'contain',
+						background: { r: 255, g: 255, b: 255 },
+					})
+					.toFormat('jpeg', { quality: 80 })
+					.toFile(filepath);
+
+				imagePaths.push(`/uploads/${filename}`);
+			}
+		}
+
 		const productVendor = await ProductVendor.findOne({
 			product: product._id,
 			vendor: vendorId,
@@ -249,7 +296,10 @@ export const updateProduct = async (req, res) => {
 		productVendor.stock = stock || productVendor.stock;
 		productVendor.vendorDescription =
 			vendorDescription || productVendor.vendorDescription;
-
+		productVendor.vendorImages = [
+			...(productVendor.vendorImages || []),
+			...(imagePaths || []),
+		];
 		await productVendor.save();
 
 		res.status(200).json({ message: 'Product updated' });
