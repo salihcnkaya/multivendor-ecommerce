@@ -26,6 +26,21 @@ const groupByVendor = (items) => {
 
 const OrderItem = ({ order }) => {
 	const [isOpen, setIsOpen] = useState(false);
+
+	console.log(order);
+
+	const getItemImage = (item) => {
+		const vendorImages = item.productVendor.vendorImages || [];
+		const productImages = item.productVendor.product.images || [];
+		const allImages = [...productImages, ...vendorImages];
+		const imagesToShow =
+			allImages.length > 0
+				? `http://localhost:5000${allImages[0]}`
+				: 'https://placehold.co/424x600';
+
+		return imagesToShow;
+	};
+
 	return (
 		<div
 			className={`max-w-7xl w-full border rounded-md text-sm ${
@@ -42,7 +57,7 @@ const OrderItem = ({ order }) => {
 						{order.items.slice(0, 2).map((item, index) => (
 							<img
 								key={index}
-								src="https://productimages.hepsiburada.net/s/777/424-600/110000887118711.jpg/format:webp"
+								src={getItemImage(item)}
 								className="size-11 p-1 object-contain border rounded-full"
 								alt={`Ürün ${index + 1}`}
 							/>
@@ -90,65 +105,7 @@ const OrderItem = ({ order }) => {
 					</button>
 				</div>
 			</div>
-			{/* {isOpen && (
-				<div className="flex flex-col gap-4 text-neutral-700 p-5">
-					{order.items.map((item, index) => {
-						return (
-							<div className="w-full border rounded-md text-sm">
-								<div className="py-4 px-3 border-b">
-									<div className="text-sm text-neutral-700">
-										Satıcı:{' '}
-										<Link
-											to={`/${item.vendor.slug}`}
-											className="font-bold text-blue-500"
-										>
-											{item.vendor.storeName}
-										</Link>
-									</div>
-								</div>
-								<div className="flex flex-col sm:flex-row sm:justify-between">
-									<div className="flex-1 p-4">
-										<div className="flex flex-col gap-8">
-											<div className="flex flex-row justify-start flex-wrap gap-4">
-												<Link to={`/${item.productVendor.product.slug}`}>
-													<img
-														src="https://productimages.hepsiburada.net/s/777/424-600/110000887118711.jpg/format:webp" // Dinamik olmasını öneririm
-														className="size-16 object-contain"
-													/>
-												</Link>
-												<div className="text-xs flex-1">
-													<div className="flex flex-col gap-2">
-														<Link to={`/${item.productVendor.product.slug}`}>
-															{item.productVendor.product.name} -{' '}
-															{item.quantity} adet
-														</Link>
-														<span className="font-semibold text-sm text-green-600">
-															{item.productVendor.price} TL
-														</span>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-									<div className="flex-1 bg-green-50">
-										<div className="p-4 ">
-											<div className="flex items-center gap-4">
-												<div className="inline-flex items-center justify-center w-12 h-12 bg-green-400 rounded-full">
-													<FaBox className="text-white text-2xl" />
-												</div>
-												<div className="text-sm">
-													Teslimat:{' '}
-													<span className="font-semibold">İşleniyor</span>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						);
-					})}
-				</div>
-			)} */}
+
 			{isOpen && (
 				<div className="flex flex-col gap-4 text-neutral-700 p-5">
 					{groupByVendor(order.items).map((group, index) => (
@@ -174,7 +131,7 @@ const OrderItem = ({ order }) => {
 											>
 												<Link to={`/${item.productVendor.product.slug}`}>
 													<img
-														src="https://productimages.hepsiburada.net/s/777/424-600/110000887118711.jpg/format:webp"
+														src={getItemImage(item)}
 														className="size-16 object-contain"
 													/>
 												</Link>

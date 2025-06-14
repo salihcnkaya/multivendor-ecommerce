@@ -8,6 +8,18 @@ import { LuX } from 'react-icons/lu';
 const OrderItem = ({ order }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const { approveProduct } = useProductContext();
+
+	const getItemImage = (item) => {
+		const productImages = item.images || [];
+		const allImages = [...productImages];
+		const imagesToShow =
+			allImages.length > 0
+				? `http://localhost:5000${allImages[0]}`
+				: 'https://placehold.co/424x600';
+
+		return imagesToShow;
+	};
+
 	return (
 		<div
 			className={`max-w-7xl w-full border rounded-md text-sm ${
@@ -30,7 +42,7 @@ const OrderItem = ({ order }) => {
 					</div>
 					<div className="flex items-center gap-4">
 						<img
-							src="https://productimages.hepsiburada.net/s/777/424-600/110000887118711.jpg/format:webp"
+							src={getItemImage(order)}
 							alt=""
 							className="size-16 object-contain"
 						/>

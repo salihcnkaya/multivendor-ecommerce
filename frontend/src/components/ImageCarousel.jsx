@@ -1,6 +1,10 @@
 import { useState } from 'react';
 const ImageCarousel = ({ images }) => {
-	const [activeImage, setActiveImage] = useState(images[0]);
+	const placeholderImage = 'https://placehold.co/424x600';
+	const hasImages = images && images.length > 0;
+	const [activeImage, setActiveImage] = useState(
+		hasImages ? images[0] : placeholderImage
+	);
 
 	const handleThumbnailClick = (image) => {
 		setActiveImage(image);
@@ -11,7 +15,7 @@ const ImageCarousel = ({ images }) => {
 			{/* Ana Görsel */}
 			<div className="w-full max-w-md border rounded-lg">
 				<img
-					src={activeImage}
+					src={hasImages ? `http://localhost:5000${activeImage}` : activeImage}
 					alt="Product"
 					className="w-full h-auto object-contain rounded-lg"
 				/>
@@ -28,7 +32,7 @@ const ImageCarousel = ({ images }) => {
 						onClick={() => handleThumbnailClick(image)}
 					>
 						<img
-							src={image}
+							src={`http://localhost:5000${image}`}
 							alt={`Thumbnail ${index + 1}`}
 							className="w-full h-full object-cover rounded-md"
 						/>

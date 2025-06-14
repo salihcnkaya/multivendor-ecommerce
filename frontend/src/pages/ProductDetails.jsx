@@ -25,11 +25,6 @@ const ProductDetails = () => {
 	useEffect(() => {
 		fetchProductDetails(slug, storeSlug);
 	}, [slug, storeSlug]);
-	const images = [
-		'https://productimages.hepsiburada.net/s/777/424-600/110000709534530.jpg/format:webp',
-		'https://productimages.hepsiburada.net/s/777/424-600/110000709534532.jpg/format:webp',
-		'https://productimages.hepsiburada.net/s/777/424-600/110000709534534.jpg/format:webp',
-	];
 
 	const [tab, setTab] = useState('aciklama');
 
@@ -59,11 +54,19 @@ const ProductDetails = () => {
 		navigate(newUrl);
 	};
 
+	const productImages = productDetails.product.images || [];
+	const vendorImages = productDetails.defaultVendor.vendorImages || [];
+	const allImages = [...productImages, ...vendorImages];
+	const imagesToShow =
+		allImages.length > 0
+			? `http://localhost:5000${allImages[0]}`
+			: 'https://placehold.co/424x600';
+
 	return (
 		<div className="max-w-[82.5rem] mx-auto mt-12 px-4 max-sm:mb-16 mb-4">
 			<section className="flex flex-col max-sm:items-center sm:flex-row justify-between gap-8 text-neutral-800">
 				<div>
-					<ImageCarousel images={images} />
+					<ImageCarousel images={allImages} />
 				</div>
 				<div className="sm:w-[37.625rem]">
 					<div>

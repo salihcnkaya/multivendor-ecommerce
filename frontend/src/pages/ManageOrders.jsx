@@ -5,7 +5,19 @@ import Spinner from '../components/Spinner';
 import { Link } from 'react-router-dom';
 
 const OrderItem = ({ order }) => {
+	const getItemImage = (item) => {
+		const vendorImages = item.productVendor.vendorImages || [];
+		const productImages = item.productVendor.product.images || [];
+		const allImages = [...productImages, ...vendorImages];
+		const imagesToShow =
+			allImages.length > 0
+				? `http://localhost:5000${allImages[0]}`
+				: 'https://placehold.co/424x600';
+
+		return imagesToShow;
+	};
 	const [isOpen, setIsOpen] = useState(false);
+
 	return (
 		<div
 			className={`max-w-7xl w-full border rounded-md text-sm ${
@@ -22,9 +34,9 @@ const OrderItem = ({ order }) => {
 						{order.items.slice(0, 2).map((item, index) => (
 							<img
 								key={index}
-								src="https://productimages.hepsiburada.net/s/777/424-600/110000887118711.jpg/format:webp" // Dinamik olmasını öneririm
-								className="size-11 p-1 object-contain border rounded-full"
-								alt={`Ürün ${index + 1}`}
+								src={getItemImage(item)}
+								className="size-11 object-contain border rounded-full"
+								alt={`Ürün görseli: ${item.productVendor.product.name}`}
 							/>
 						))}
 
@@ -86,9 +98,10 @@ const OrderItem = ({ order }) => {
 						</div>
 						<div className="border-l p-2">
 							<p className="font-semibold">Ürün bilgileri</p>
-							{order.items.map((item) => {
+							{order.items.map((item, index) => {
 								return (
 									<Link
+										key={index}
 										to={`/${item.productVendor.product.slug}`}
 										className="block my-1 hover:text-orange-500 transition-all"
 										target="_blank"

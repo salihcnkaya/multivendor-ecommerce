@@ -24,6 +24,18 @@ const CartItem = ({ product }) => {
 		removeCartItem(product);
 	};
 
+	const getItemImage = (item) => {
+		const productImages = item.productVendor.product.images || [];
+		const vendorImages = item.productVendor.vendorImages || [];
+		const allImages = [...productImages, ...vendorImages];
+		const imagesToShow =
+			allImages.length > 0
+				? `http://localhost:5000${allImages[0]}`
+				: 'https://placehold.co/424x600';
+
+		return imagesToShow;
+	};
+
 	return (
 		<li className="py-3 px-2 sm:py-5 sm:px-6 border-b border-b-gray-100">
 			<div className="flex gap-2 sm:gap-4">
@@ -31,9 +43,9 @@ const CartItem = ({ product }) => {
 					<figure className="bg-white border rounded-lg size-20 sm:size-28 p-2 sm:p-3">
 						<Link>
 							<img
-								src={product.productVendor.product.images}
-								alt={product.productVendor.product.name}
-								className=""
+								src={getItemImage(product)}
+								alt={`Ürün görseli: ${product.productVendor.product.name}`}
+								className="size-full object-contain"
 							/>
 						</Link>
 					</figure>
@@ -118,7 +130,6 @@ const Cart = () => {
 		);
 	}
 
-	// 2. Sepet boşsa
 	if (cart.items.length === 0) {
 		return (
 			<div className="h-screen w-full flex items-center justify-center">

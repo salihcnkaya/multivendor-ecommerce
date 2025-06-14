@@ -6,12 +6,25 @@ import { useAuth } from '../context/AuthContext';
 import Spinner from '../components/Spinner';
 
 const ProductCard = ({ product, onEditClick, onDeleteClick }) => {
+	console.log(product);
+
+	const getItemImage = (item) => {
+		const productImages = product.product.images || [];
+		const vendorImages = product.vendorImages || [];
+		const allImages = [...productImages, ...vendorImages];
+		const imagesToShow =
+			allImages.length > 0
+				? `http://localhost:5000${allImages[0]}`
+				: 'https://placehold.co/424x600';
+
+		return imagesToShow;
+	};
 	return (
 		<li className="border rounded-lg p-4 flex flex-col sm:flex-row items-center gap-4 mb-4">
 			<div className="w-full flex items-center gap-4">
 				<img
-					src="https://productimages.hepsiburada.net/s/777/424-600/110000887118711.jpg/format:webp"
-					alt=""
+					src={getItemImage(product)}
+					alt={`Ürün görseli: ${product.product.name}`}
 					className="size-20 object-contain"
 				/>
 				<div className="flex flex-col">

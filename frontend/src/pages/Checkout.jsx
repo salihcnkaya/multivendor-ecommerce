@@ -48,6 +48,18 @@ const Checkout = () => {
 		}
 	};
 
+	const getItemImage = (item) => {
+		const productImages = item.productVendor.product.images || [];
+		const vendorImages = item.productVendor.vendorImages || [];
+		const allImages = [...productImages, ...vendorImages];
+		const imagesToShow =
+			allImages.length > 0
+				? `http://localhost:5000${allImages[0]}`
+				: 'https://placehold.co/424x600';
+
+		return imagesToShow;
+	};
+
 	return (
 		<>
 			<div>
@@ -128,8 +140,9 @@ const Checkout = () => {
 																<figure className="bg-white border rounded-lg size-14 sm:size-11">
 																	<Link>
 																		<img
-																			src="https://productimages.hepsiburada.net/s/131/200-200/110000082161536.jpg/format:webp"
-																			alt={item.productVendor.product.name}
+																			src={getItemImage(item)}
+																			alt={`Ürün görseli: ${item.productVendor.product.name}`}
+																			className="size-full object-contain"
 																		/>
 																	</Link>
 																</figure>
